@@ -70,7 +70,8 @@ def download_all(output_dir: str = None, verbose: bool = True):
             print(f"\n[{model_name.upper()}]")
             print(f"  Description: {info['description']}")
             print(f"  Source:      huggingface.co/{info['repo_id']}")
-            print(f"  Paper:       {info['paper']}")
+            if 'paper' in info:
+                print(f"  Paper:       {info['paper']}")
 
         try:
             for filename in info["files"]:
