@@ -269,6 +269,15 @@ class ZeroShotSVC:
         print(f"    Content shape: {content_features.shape}")
 
         # -----------------------------------------------------------
+        # Step 3.5: Force frame-rate alignment to 50 Hz (hop=320 @ 16kHz)
+        # -----------------------------------------------------------
+        expected_frames = max(1, len(source_audio) // self.config.audio.hop_size)
+        content_features = self._resample_features(content_features, expected_frames)
+        f0 = self._resample_1d(f0, expected_frames)
+        uv = self._resample_1d(uv, expected_frames)
+        print(f"    Aligned frames: {expected_frames} (expected from audio length)")
+
+        # -----------------------------------------------------------
         # Step 4: Extract speaker embedding from reference audio
         # -----------------------------------------------------------
         print("  [4/7] Extracting speaker embedding (CAM++)...")
@@ -306,12 +315,7 @@ class ZeroShotSVC:
 
     def _align_features(self, content: np.ndarray, f0: np.ndarray,
                         uv: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Align content features and F0 to the same temporal resolution.
-
-        ContentVec outputs at ~50Hz (320 samples/frame at 16kHz).
-        RMVPE outputs at 50Hz (320 samples/frame at 16kHz).
-        They should be aligned, but we handle any minor mismatches here.
-        """
+        """Align content features and F0 to the same temporal resolution."""
         content_len = content.shape[0]
         f0_len = len(f0)
 
@@ -320,14 +324,12 @@ class ZeroShotSVC:
 
         # Interpolate to match the shorter sequence
         if content_len > f0_len:
-            # Interpolate F0 to match content length
             indices = np.linspace(0, f0_len - 1, content_len)
             f0_aligned = np.interp(indices, np.arange(f0_len), f0)
             uv_aligned = np.interp(indices, np.arange(f0_len), uv)
             uv_aligned = (uv_aligned > 0.5).astype(np.float32)
             return content, f0_aligned, uv_aligned
         else:
-            # Interpolate content to match F0 length
             indices = np.linspace(0, content_len - 1, f0_len)
             content_aligned = np.zeros((f0_len, content.shape[1]), dtype=np.float32)
             for dim in range(content.shape[1]):
@@ -335,6 +337,26 @@ class ZeroShotSVC:
                     indices, np.arange(content_len), content[:, dim]
                 )
             return content_aligned, f0, uv
+
+    @staticmethod
+    def _resample_features(features: np.ndarray, target_len: int) -> np.ndarray:
+        """Resample 2D features (T, D) to target_len via linear interpolation."""
+        T, D = features.shape
+        if T == target_len:
+            return features
+        indices = np.linspace(0, T - 1, target_len)
+        out = np.zeros((target_len, D), dtype=np.float32)
+        for d in range(D):
+            out[:, d] = np.interp(indices, np.arange(T), features[:, d])
+        return out
+
+    @staticmethod
+    def _resample_1d(arr: np.ndarray, target_len: int) -> np.ndarray:
+        """Resample 1D array to target_len via linear interpolation."""
+        if len(arr) == target_len:
+            return arr
+        indices = np.linspace(0, len(arr) - 1, target_len)
+        return np.interp(indices, np.arange(len(arr)), arr).astype(np.float32)
 
     def _transpose_f0(self, f0: np.ndarray, uv: np.ndarray,
                       semitones: int, protect: bool = True) -> np.ndarray:
@@ -423,6 +445,15 @@ class ZeroShotSVC:
             spk_embedding = spk_padded
 
         spk_tensor = numpy_to_torch(spk_embedding).unsqueeze(0)  # (1, gin_channels)
+
+        # Safety: cap sequence length to prevent OOM in self-attention
+        max_seq = 2000  # ~40s at 50Hz — safe for any GPU
+        T = content_tensor.shape[1]
+        if T > max_seq:
+            print(f"    [WARN] Truncating features from {T} to {max_seq} frames "
+                  f"(audio too long for single-pass inference)")
+            content_tensor = content_tensor[:, :max_seq]
+            f0_tensor = f0_tensor[:, :, :max_seq]
 
         # Add batch dimension
         content_tensor = content_tensor.unsqueeze(0).to(self.device)  # (1, 256, T)
