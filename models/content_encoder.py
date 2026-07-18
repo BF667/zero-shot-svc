@@ -142,8 +142,8 @@ class ContentVecEncoder(nn.Module):
     """
 
     def __init__(self, output_dim: int = 256, hidden_dim: int = 512,
-                 transformer_dim: int = 1024, num_layers: int = 12,
-                 num_heads: int = 16):
+                 transformer_dim: int = 512, num_layers: int = 4,
+                 num_heads: int = 8):
         super().__init__()
         self.cnn = CNNFeatureExtractor(conv_dim=hidden_dim)
 

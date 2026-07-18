@@ -113,12 +113,13 @@ class ZeroShotSVC:
             device=self.device,
         )
 
-        # 2. ContentVec Content Encoder
-        print("\n[2/5] Loading ContentVec Content Encoder...")
+        # 2. ContentVec Content Encoder (forced CPU — largest model, avoids CUDA OOM)
+        print("\n[2/5] Loading ContentVec Content Encoder (CPU)...")
         self.content_encoder = ContentEncoder(
             output_dim=self.config.content_encoder.output_dim,
-            device=self.device,
+            device='cpu',
         )
+        torch.cuda.empty_cache()
 
         # 3. CAM++ Speaker Encoder
         print("\n[3/5] Loading Speaker Encoder (CAM++)...")
@@ -126,6 +127,7 @@ class ZeroShotSVC:
             embedding_dim=self.config.speaker_encoder.embedding_dim,
             device=self.device,
         )
+        torch.cuda.empty_cache()
 
         # 4. VITS Generator
         print("\n[4/5] Loading VITS Generator...")
@@ -141,6 +143,7 @@ class ZeroShotSVC:
         )
         self.generator.eval()
         self.generator.to(self.device)
+        torch.cuda.empty_cache()
         print(f"[Generator] Model loaded on {self.device} "
               f"(randomly initialized - load pretrained weights for best quality)")
 
@@ -151,6 +154,7 @@ class ZeroShotSVC:
             sample_rate=self.config.audio.output_sample_rate,
             device=self.device,
         )
+        torch.cuda.empty_cache()
 
         self._models_loaded = True
         elapsed = time.time() - t0
