@@ -1,0 +1,49 @@
+# Zero-Shot Singing Voice Conversion Configuration
+# Based on RVC architecture, no training required
+
+audio:
+  sample_rate: 16000          # Internal processing sample rate (HuBERT/RMVPE)
+  output_sample_rate: 32000   # VITS output sample rate
+  hop_size: 320               # Hop size for spectrogram (20ms at 16kHz)
+  win_size: 640               # Window size (40ms at 16kHz)
+  fft_size: 1280              # FFT size
+  mel_bins: 128               # Number of mel bins
+  fmin: 50.0                  # Minimum frequency for mel spec
+  fmax: 8000.0                # Maximum frequency for mel spec
+
+content_encoder:
+  model_name: "contentvec"    # ContentVec (derived from HuBERT-large)
+  output_dim: 256             # Feature dimension per frame
+  hop_length: 320             # 20ms per frame at 16kHz
+  repo_id: "lengyue233/content-vec-best"
+
+f0_extractor:
+  method: "rmvpe"             # Default: RMVPE (Robust Model for Vocal Pitch Estimation)
+  f0_min: 50.0                # Minimum F0 (Hz) - covers bass to soprano
+  f0_max: 1100.0              # Maximum F0 (Hz) - covers high singing
+  rmvpe_model_repo: "lj1995/VoiceConversionWebUI"
+  rmvpe_model_file: "rmvpe.pt"
+
+speaker_encoder:
+  model_name: "cam++"         # CAM++ speaker verification model
+  embedding_dim: 192          # Speaker embedding dimension
+  sample_rate: 16000
+  repo_id: "funasr/cam++"
+
+generator:
+  # VITS-style conditional generator
+  hidden_channels: 192        # Hidden dimension
+  filter_channels: 768        # FFT filter channels
+  n_heads: 2                  # Attention heads
+  n_layers: 6                 # Transformer layers
+  kernel_size: 3              # Conv kernel size
+  p_dropout: 0.1              # Dropout rate
+  n_flow_layers: 4            # Number of normalizing flow layers
+  n_speakers: 1               # Single speaker for zero-shot (conditioned on embedding)
+  gin_channels: 256           # Speaker conditioning channels
+  use_spk_conditioning: true  # Use speaker embedding conditioning
+
+vocoder:
+  name: "hifigan"             # HiFi-GAN vocoder
+  hop_size: 320               # Must match generator output
+  # Pre-trained HiFi-GAN universal vocoder for speech/singing
