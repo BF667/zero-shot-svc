@@ -253,7 +253,7 @@ zero-shot-svc/
 
 ## Colab
 
-Open [**zero_shot_svc_colab.ipynb**](zero_shot_svc_colab.ipynb) in Google Colab for a ready-to-run notebook with GPU support. No local installation needed.
+Open [**zero_shot_svc_colab.ipynb**](https://colab.research.google.com/github/BF667/zero-shot-svc/blob/main/zero_shot_svc_colab.ipynb) in Google Colab for a ready-to-run notebook with GPU support. No local installation needed.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BF667/zero-shot-svc/blob/main/zero_shot_svc_colab.ipynb)
 
