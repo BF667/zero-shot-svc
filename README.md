@@ -7,7 +7,36 @@
     <img src="https://img.shields.io/badge/Python-3.9+-blue.svg" alt="Python">
     <img src="https://img.shields.io/badge/PyTorch-2.1+-ee4c2c.svg" alt="PyTorch">
     <img src="https://img.shields.io/badge/F0-RMVPE-green.svg" alt="RMVPE">
-    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
+    <img src="https://img.shields.io/badge/License-MIT%20%2B%20Custom-yellow.svg" alt="License">
+  </p>
+  <!-- Stargazer -->
+  <p align="center">
+    <a href="https://github.com/BF667/zero-shot-svc/stargazers">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=BF667/zero-shot-svc&type=Date&theme=dark" />
+        <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=BF667/zero-shot-svc&type=Date" />
+        <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=BF667/zero-shot-svc&type=Date" />
+      </picture>
+    </a>
+  </p>
+  <!-- Stargazers button -->
+  <p align="center">
+    <a href="https://github.com/BF667/zero-shot-svc">
+      <img src="https://img.shields.io/github/stars/BF667/zero-shot-svc?style=social" alt="GitHub Stars">
+    </a>
+    &nbsp;
+    <a href="https://github.com/BF667/zero-shot-svc/fork">
+      <img src="https://img.shields.io/github/forks/BF667/zero-shot-svc?style=social" alt="GitHub Forks">
+    </a>
+    &nbsp;
+    <a href="https://github.com/BF667/zero-shot-svc/watchers">
+      <img src="https://img.shields.io/github/watchers/BF667/zero-shot-svc?style=social" alt="GitHub Watchers">
+    </a>
+  </p>
+  <p align="center">
+    <a href="https://github.com/BF667/zero-shot-svc/stargazers">
+      <img src="https://reporoster.com/stars/dark/BF667/zero-shot-svc" alt="Stargazers" width="400" />
+    </a>
   </p>
 </p>
 
@@ -272,7 +301,48 @@ Open [**zero_shot_svc_colab.ipynb**](https://colab.research.google.com/github/BF
 
 ## License
 
-MIT License. Use freely for research, personal, and commercial projects.
+This project is dual-licensed under:
+
+### MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+### BF667 Guide Licence
+
+```
+BF667 Guide Licence
+
+Copyright (c) 2024 BF667
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions, and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions, and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+   may be used to endorse or promote products derived from this software
+   without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
 
 ---
 
