@@ -13,3 +13,4 @@ phonemizer
 pypinyin
 cn2an
 jieba_fast
+gradio>=4.0

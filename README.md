@@ -125,6 +125,7 @@ pip install -r requirements.txt
 - `librosa >= 0.10.0` — Audio analysis
 - `transformers >= 4.36.0` — HuggingFace model hub access
 - `huggingface_hub >= 0.20.0` — Weight downloading
+- `gradio >= 4.0` — Interactive web UI demo
 - `scipy`, `numpy`, `soundfile` — Numerical and audio utilities
 
 ---
@@ -148,6 +149,33 @@ python main.py convert \
   --transpose 12 \
   -o converted_high.wav
 ```
+
+### Gradio Demo
+
+Launch an interactive web UI in your browser:
+
+```bash
+# Install gradio (included in requirements.txt)
+pip install gradio
+
+# Launch locally
+python gradio_app.py
+
+# Launch with a public shareable link
+python gradio_app.py --share
+
+# Custom port / host
+python gradio_app.py --port 8080 --host 127.0.0.1
+```
+
+The Gradio demo provides:
+
+- **Drag-and-drop audio upload** for source singing and reference voice
+- **Real-time waveform preview** for all audio (input & output)
+- **Parameter sliders** for pitch shift, F0 curve, and noise scale
+- **Neural toggle** to switch between signal processing and RVC neural pipeline
+- **Progress bar** and status info (conversion time, device, duration)
+- **Collapsible guide** with pipeline explanation and best-practice tips
 
 ### Python API
 
@@ -211,6 +239,7 @@ Global Options:
 ```
 zero-shot-svc/
 ├── main.py                          # CLI entry point
+├── gradio_app.py                    # Gradio web demo
 ├── configs/
 │   └── default.yaml                 # Default configuration
 ├── models/
@@ -282,7 +311,17 @@ zero-shot-svc/
 
 ## Colab
 
-Open [**zero_shot_svc_colab.ipynb**](https://colab.research.google.com/github/BF667/zero-shot-svc/blob/main/zero_shot_svc_colab.ipynb) in Google Colab for a ready-to-run notebook with GPU support. No local installation needed.
+### Run in Browser (Gradio)
+
+No installation needed — launch the demo and open it in your browser:
+
+```bash
+python gradio_app.py --share
+```
+
+### Run on Colab
+
+Open [**zero_shot_svc_colab.ipynb**](https://colab.research.google.com/github/BF667/zero-shot-svc/blob/main/zero_shot_svc_colab.ipynb) in Google Colab for a ready-to-run notebook with GPU support.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BF667/zero-shot-svc/blob/main/zero_shot_svc_colab.ipynb)
 
