@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://huggingface.co/collections/takearushfan/rvc2-models",
+    "name": "RVC2 models - a takearushfan Collection - Hugging Face",
+    "snippet": "Retrieval-based-Voice-Conversion 2.0 models. RVC2 models updated Jan 6, 2024 Retrieval-based-Voice-Conversion 2.0 models. View history ...",
+    "host_name": "huggingface.co",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/blog/Blane187/what-is-rvc",
+    "name": "What is Retrieval-based Voice Conversion WebUI? - Hugging Face",
+    "snippet": "Retrieval-based Voice Conversion WebUI is an open-source framework designed to make voice conversion simple and efficient.",
+    "host_name": "huggingface.co",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI/releases",
+    "name": "Releases · RVC-Project/Retrieval-based-Voice",
+    "snippet": "1、download or clone updated codes from github, and replace 0528v2 version. 2、download new pretrained_v2 weights from https://huggingface.co/lj1995 ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/blaise-tk/TITAN",
+    "name": "blaise-tk/TITAN - Hugging Face",
+    "snippet": "TITAN: A Versatile, Robust, and High-Quality Pretrained Model for Retrieval-based Voice Conversion (RVC) Training · Overview · Model Details. Missing: weights | Show results with: weights",
+    "host_name": "huggingface.co",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/Politrees/RVC_resources",
+    "name": "Politrees/RVC_resources - Hugging Face",
+    "snippet": "A repository of pretrained models, HuBERT models, and other files for RVC neural network. overall work efficiency. Downloads are not tracked for this model. Missing: Retrieval- based weights 2024",
+    "host_name": "huggingface.co",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://substack.com/home/post/p-157573545?utm_campaign=post&utm_medium=web",
+    "name": "Demo of AI song covers using RVC (Retrieval-based Voice Conversion)",
+    "snippet": "For Windows users, download and extract file RVC-beta.7z from Huggingface space, then double click on go-web.bat The web UI to training and ...",
+    "host_name": "substack.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/PersianSingers/RVC-models",
+    "name": "PersianSingers/RVC-models - Hugging Face",
+    "snippet": "This repository contains a Retrieval-based Voice Conversion (RVC) model trained on a dataset of Persian singers. Download the model files. Missing: pretrained weights 2024",
+    "host_name": "huggingface.co",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://grokipedia.com/page/retrieval_based_voice_conversion",
+    "name": "Retrieval-based Voice Conversion - Grokipedia",
+    "snippet": "Community-uploaded pre-trained RVC voice models are available for free download from popular websites, including Hugging Face (huggingface.co/models?other=rvc),",
+    "host_name": "grokipedia.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/axinc-ai/rvc-an-ai-powered-voice-changer-39927cc83bee",
+    "name": "RVC: An AI-Powered Voice Changer - Medium",
+    "snippet": "RVC (Retrieval-based-Voice-Conversion) is an AI-powered voice changer that can learn to perform high-quality voice transformations using just about 10 minutes ...",
+    "host_name": "medium.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=5i_Pyw0gH-M",
+    "name": "RVC V2 Tutorial - Speak in any voice! - Retrieval-based Voice Conversion",
+    "snippet": "aivoices #aivoice #ai #aitutorial #rvc #rvcproject #rvcgui, RVC WebUI, RVC AI Tutorial, RVC GUI Tutorial, RVC Project Tutorial, AI Voice ... Missing: weights | Show results with: weights",
+    "host_name": "www.youtube.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

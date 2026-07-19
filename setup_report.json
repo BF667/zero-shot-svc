@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-07-19 14:09:09",
+  "system": {
+    "platform": "Linux-5.10.134-013.8.3.kangaroo.al8.x86_64-x86_64-with-glibc2.41",
+    "python_version": "3.12.13",
+    "os": "Linux"
+  },
+  "checks": {
+    "python_ok": true,
+    "gpu_available": false,
+    "deps_ok": false,
+    "weights_ok": false,
+    "validation_ok": true
+  },
+  "recommendations": [
+    "Install missing dependencies: pip install -r requirements.txt",
+    "Download model weights: python main.py download",
+    "Consider using a cloud GPU for neural mode (RunPod, Modal)"
+  ]
+}

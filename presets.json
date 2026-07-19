@@ -1,0 +1,82 @@
+{
+  "Default": {
+    "f0_transpose": 0,
+    "f0_curve_factor": 1.0,
+    "noise_scale": 0.4,
+    "formant_shift": 0,
+    "vibrato_strength": 0.0,
+    "breathiness": 0.0,
+    "protect_consonants": true,
+    "noise_reduction": 0.0
+  },
+  "Male \u2192 Female (+5st)": {
+    "f0_transpose": 5,
+    "f0_curve_factor": 1.05,
+    "noise_scale": 0.35,
+    "formant_shift": 2,
+    "vibrato_strength": 0.2,
+    "breathiness": 0.1,
+    "protect_consonants": true,
+    "noise_reduction": 0.0
+  },
+  "Female \u2192 Male (-5st)": {
+    "f0_transpose": -5,
+    "f0_curve_factor": 0.95,
+    "noise_scale": 0.45,
+    "formant_shift": -2,
+    "vibrato_strength": 0.0,
+    "breathiness": 0.0,
+    "protect_consonants": true,
+    "noise_reduction": 0.0
+  },
+  "Octave Up (+12st)": {
+    "f0_transpose": 12,
+    "f0_curve_factor": 1.0,
+    "noise_scale": 0.4,
+    "formant_shift": 4,
+    "vibrato_strength": 0.3,
+    "breathiness": 0.15,
+    "protect_consonants": true,
+    "noise_reduction": 0.0
+  },
+  "Octave Down (-12st)": {
+    "f0_transpose": -12,
+    "f0_curve_factor": 1.0,
+    "noise_scale": 0.5,
+    "formant_shift": -4,
+    "vibrato_strength": 0.0,
+    "breathiness": 0.0,
+    "protect_consonants": true,
+    "noise_reduction": 0.0
+  },
+  "Soft & Gentle": {
+    "f0_transpose": 0,
+    "f0_curve_factor": 0.9,
+    "noise_scale": 0.3,
+    "formant_shift": 1,
+    "vibrato_strength": 0.15,
+    "breathiness": 0.25,
+    "protect_consonants": true,
+    "noise_reduction": 0.3
+  },
+  "Powerful & Bold": {
+    "f0_transpose": 0,
+    "f0_curve_factor": 1.1,
+    "noise_scale": 0.5,
+    "formant_shift": -1,
+    "vibrato_strength": 0.0,
+    "breathiness": 0.0,
+    "protect_consonants": false,
+    "noise_reduction": 0.0
+  },
+  "Robot / Synthetic": {
+    "f0_transpose": 0,
+    "f0_curve_factor": 1.0,
+    "noise_scale": 0.1,
+    "formant_shift": 0,
+    "vibrato_strength": 0.0,
+    "breathiness": 0.0,
+    "protect_consonants": false,
+    "noise_reduction": 0.5
+  }
+}

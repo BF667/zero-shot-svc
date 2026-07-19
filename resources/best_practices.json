@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://arxiv.org/html/2511.08496v1",
+    "name": "HQ-SVC: Towards High-Quality Zero-Shot Singing Voice  - arXiv",
+    "snippet": "Zero-shot singing voice conversion (SVC) transforms a source singer's timbre to an unseen target speaker's voice while preserving melodic ... Missing: practices | Show results with: practices",
+    "host_name": "arxiv.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/Plachtaa/seed-vc",
+    "name": "Plachtaa/seed-vc: zero-shot voice conversion & singing  - GitHub",
+    "snippet": "It is strongly recommended to use a GPU for real-time voice conversion. Some performance testing has been done on a NVIDIA RTX 3060 Laptop GPU, clone someone's ... Missing: practices | Show results with: practices",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.isca-archive.org/interspeech_2024/ma24e_interspeech.pdf",
+    "name": "[PDF] Vec-Tok-VC+: Residual-enhanced Robust Zero-shot Voice",
+    "snippet": "Zero-shot voice conversion (VC) aims to transform source speech into arbitrary unseen target voice while keeping the lin- guistic content ...",
+    "host_name": "www.isca-archive.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/html/2512.04793v1",
+    "name": "YingMusic-SVC: Real-World Robust Zero-Shot Singing Voice  - arXiv",
+    "snippet": "YingMusic-SVC is a robust zero-shot singing voice conversion framework designed for real-world deployment. It integrates multi-stage learning— ...",
+    "host_name": "arxiv.org",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://sap.ist.i.kyoto-u.ac.jp/EN/bib/intl/ZHO-ICME25.pdf",
+    "name": "[PDF] InvoxSVC: Any-to-any Zero-shot Singing Voice Conversion with In",
+    "snippet": "achieving zero-shot, any-to-any voice transformation capabilities. All models were trained with the AdamW optimizer on 8 A100 GPUs, Missing: best practices",
+    "host_name": "sap.ist.i.kyoto-u.ac.jp",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/papers?q=Voice%20conversion",
+    "name": "Daily Papers - Hugging Face",
+    "snippet": "Zero-shot singing voice conversion (SVC) transforms a source singer's timbre to an unseen target speaker's voice while preserving melodic content without fine- ...",
+    "host_name": "huggingface.co",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://grokipedia.com/page/retrieval_based_voice_conversion",
+    "name": "Retrieval-based Voice Conversion - Grokipedia",
+    "snippet": "Retrieval-based voice conversion (RVC) is an AI-driven technique that transforms the voice characteristics of a source speaker into those of a target speaker ...",
+    "host_name": "grokipedia.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/LocalLLaMA/comments/1gj14oa/best_open_source_voice_cloning_if_you_have_lots",
+    "name": "Best Open Source Voice Cloning if you have lots of reference audio?",
+    "snippet": "I've been using ElevenLabs for awhile but now want to self-host. I was really impressed with F5-TTS for its ability to clone using only a few seconds of audio.",
+    "host_name": "www.reddit.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://tldr.takara.ai/p/2501.13870",
+    "name": "Everyone-Can-Sing: Zero-Shot Singing Voice Synthesis and",
+    "snippet": "Zero-shot voice conversion aims to transfer the voice of a source speaker to that of a speaker unseen during training, while preserving the content information.",
+    "host_name": "tldr.takara.ai",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/398357150_YingMusic-SVC_Real-World_Robust_Zero-Shot_Singing_Voice_Conversion_with_Flow-GRPO_and_Singing-Specific_Inductive_Biases",
+    "name": "(PDF) YingMusic-SVC: Real-World Robust Zero-Shot Singing Voice",
+    "snippet": "We propose YingMusic-SVC, a robust zero-shot framework that unifies continuous pre-training, robust supervised fine-tuning, and Flow-GRPO ...",
+    "host_name": "www.researchgate.net",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

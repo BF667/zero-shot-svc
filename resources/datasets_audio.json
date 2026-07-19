@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://transactions.ismir.net/articles/10.5334/tismir.108",
+    "name": "Audiovisual Singing Voice Separation",
+    "snippet": "We propose to apply the visual information corresponding to the singers' vocal activities to further improve the quality of the separated vocal signals.",
+    "host_name": "transactions.ismir.net",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/AMAAI-Lab/ai-audio-datasets-list",
+    "name": "GitHub - AMAAI-Lab/ai-audio-datasets-list",
+    "snippet": "CCMixter is a singing voice separation dataset consisting of 50 full-length stereo tracks from ccMixter featuring many different musical genres.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/html/2305.07489v2",
+    "name": "Benchmarks and leaderboards for sound demixing tasks - arXiv",
+    "snippet": "The synthetic dataset for the vocal separation task was created by combining random vocal and instrumental samples, publicly available on the internet.",
+    "host_name": "arxiv.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://sonovox.ai/products/the-ultimate-vocal-dataset",
+    "name": "Ultimate Vocal DatasetLicensed Vocal Dataset for AI Training - Sonovox",
+    "snippet": "The Sonovox Ultimate Vocal Dataset is a licensed collection of 5,000+ full-length vocal stem packs with more than 25,000 minutes of dry studio vocals for AI ...",
+    "host_name": "sonovox.ai",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.facebook.com/groups/freevstplugins/posts/2626925750795826",
+    "name": "# I found this site for music & voice separation. Not bad. Perhaps it's",
+    "snippet": "I recently downloaded a free (open source) app called UVR5 (Ultimate Vocal Remover), and it's absolutely phenomenal.",
+    "host_name": "www.facebook.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://labsites.rochester.edu/air/resource.html",
+    "name": "AIR Lab | Resources",
+    "snippet": "We introduce a dataset for facilitating audio-visual analysis of singing performances. The dataset comprises a number of songs where singers' solo voices are ...",
+    "host_name": "labsites.rochester.edu",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/RVCAdepts/comments/1fcilov/advanced_techniques_for_post_processing_ai_vocals",
+    "name": "Advanced Techniques for Post Processing AI Vocals Mixes - Reddit",
+    "snippet": "The key to achieving natural AI vocals starts with selecting the cleanest possible vocal track. You should aim for dry, studio-quality acapella.",
+    "host_name": "www.reddit.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ink.library.smu.edu.sg/context/sis_research/article/10163/viewcontent/4._DLVS4Audio2Sheet_Deep_Learning_based_Vocal_Separation_for_Audio_into_Music_Sheet_Conversion.pdf",
+    "name": "[PDF] Deep learning-based vocal separation for audio into music sheet conversion",
+    "snippet": "Each song in the dataset is divided into four vocal stems, each containing three to four distinct recordings by different vocalists.",
+    "host_name": "ink.library.smu.edu.sg",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=9kzlr6otFqU",
+    "name": "UVR5 Tutorial with Audio Examples - YouTube",
+    "snippet": "Ever wanted to isolate vocals from a song? Extract instrumentals or individual instruments? UVR5 (Ultimate Vocal Remover) is your free and ...",
+    "host_name": "www.youtube.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://zenodo.org/records/6404999",
+    "name": "University of Rochester Audio-Visual Solo Singing Performance (URSing",
+    "snippet": "The dataset comprises a number of songs where singers' solo voices are recorded in isolation. For each song, we provide the high-quality audio ...",
+    "host_name": "zenodo.org",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

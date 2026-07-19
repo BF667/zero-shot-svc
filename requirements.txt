@@ -14,3 +14,12 @@ pypinyin
 cn2an
 jieba_fast
 gradio>=4.0
+
+# API Server dependencies (optional, for `python main.py serve`)
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+python-multipart>=0.0.6
+psutil>=5.9.0
+
+# Enhanced audio processing
+pyworld>=0.3.0  # High-quality F0 and spectral envelope extraction

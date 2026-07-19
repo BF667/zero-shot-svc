@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://huggingface.co/papers/2306.15412",
+    "name": "RMVPE: A Robust Model for Vocal Pitch Estimation in Polyphonic Music - Hugging Face",
+    "snippet": "We propose a robust model named RMVPE. This model can extract effective hidden features and accurately predict vocal pitches from polyphonic music. Missing: download ContentVec HuBERT CAM ++ speaker encoder\nWe propose a robust model named RMVPE. This model can extract effective hidden features and accurately predict vocal pitches from polyphonic music. Missing: ContentVec HuBERT CAM ++ speaker encoder",
+    "host_name": "huggingface.co",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/ameerazam08/SOME",
+    "name": "ameerazam08/SOME - Hugging Face",
+    "snippet": "For better pitch extraction results, please download the RMVPE pretrained model from here and extract it into pretrained/ directory. Missing: ContentVec HuBERT CAM ++ speaker encoder",
+    "host_name": "huggingface.co",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/terastudio/HPA-RMVPE",
+    "name": "terastudio/HPA-RMVPE - Hugging Face",
+    "snippet": "This benchmark evaluates pitch detection algorithms across multiple datasets with different characteristics, including synthetic and real audio from speech and ... Missing: ContentVec HuBERT CAM ++ speaker encoder",
+    "host_name": "huggingface.co",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/docs/transformers/en/model_doc/hubert",
+    "name": "HuBERT - Hugging Face",
+    "snippet": "HuBERT is a self-supervised speech model to cluster aligned target labels for BERT-like prediction loss ・ ed regions to force the model to learn both acoustic ... Missing: RMVPE extraction ContentVec CAM ++ speaker",
+    "host_name": "huggingface.co",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/Politrees/RVC_resources/blob/9f383e6b22cde23d71ef40843b01065d5e7c81e0/other/rmvpe.pt",
+    "name": "other/rmvpe.pt · Politrees/RVC_resources at 9f383e6b22cde23d71ef40843b01065d5e7c81e0 - Hugging Face",
+    "snippet": "We're on a journey to advance and democratize artificial intelligence through open source and open science. Missing: pitch extraction ContentVec CAM ++ speaker encoder",
+    "host_name": "huggingface.co",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/lj1995/VoiceConversionWebUI/blob/main/rmvpe.onnx",
+    "name": "rmvpe.onnx · lj1995/VoiceConversionWebUI at main - Hugging Face",
+    "snippet": "This file is stored with Xet . you can still download it. intelligently splitting files into unique chunks and accelerating uploads and ... Missing: pitch extraction ContentVec HuBERT CAM ++ speaker encoder",
+    "host_name": "huggingface.co",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/models?other=hubert&p=0&sort=downloads",
+    "name": "Models - Hugging Face",
+    "snippet": "Explore machine learning models. Models 1,815 Base only. Automatic Speech Recognition Missing: RMVPE CAM ++ speaker encoder",
+    "host_name": "huggingface.co",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/lengyue233/content-vec-best",
+    "name": "lengyue233/content-vec-best - Hugging Face",
+    "snippet": "This repo brings fairseq ContentVec model to HuggingFace Transformers. You need to download the ContentVec_legacy model from the official repo, and then run ... Missing: RMVPE pitch extraction CAM ++ speaker encoder",
+    "host_name": "huggingface.co",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/kindahex/voice-conversion/blob/main/rmvpe.pt",
+    "name": "rmvpe.pt · kindahex/voice-conversion at main - Hugging Face",
+    "snippet": "We're on a journey to advance and democratize artificial intelligence through open source and open science. Missing: pitch extraction ContentVec HuBERT CAM ++ speaker encoder",
+    "host_name": "huggingface.co",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/Politrees/RVC_resources/tree/main",
+    "name": "Politrees/RVC_resources at main - Hugging Face",
+    "snippet": "We're on a journey to advance and democratize artificial intelligence through open source and open science. Missing: pitch extraction download ContentVec CAM ++ speaker encoder",
+    "host_name": "huggingface.co",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

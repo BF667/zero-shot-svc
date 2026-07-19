@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/RVC-Boss/sovits",
+    "name": "RVC-Boss/sovits: SoftVC VITS Singing Voice Conversion - GitHub",
+    "snippet": "The singing voice conversion model uses SoftVC content encoder to extract source audio speech features, then the vectors are directly fed into VITS Missing: tutorial 2024",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/svc-develop-team/so-vits-svc",
+    "name": "svc-develop-team/so-vits-svc: SoftVC VITS Singing Voice Conversion",
+    "snippet": "This project differs fundamentally from VITS, as it focuses on Singing Voice Conversion (SVC) rather than Text-to-Speech (TTS). Missing: tutorial 2024",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/rvc",
+    "name": "rvc · GitHub Topics",
+    "snippet": "Easily train a good VC model with voice data <=. A simple, high-quality voice conversion tool focused on ease of use and performance. VC v2 trained AI voice ... Missing: tutorial | Show results with: tutorial",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=wkvHJ6LebD4",
+    "name": "Updated RVC Real-Time Voice Changer AI | Tutorial 2024 - YouTube",
+    "snippet": "This video will teach you to use RVC ( Retrieval -based voice conversion) using the RVC fork. The website for the real time AI voice changer ... Missing: community so- vits- svc",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/LocalLLaMA/comments/1gj14oa/best_open_source_voice_cloning_if_you_have_lots",
+    "name": "Best Open Source Voice Cloning if you have lots of reference audio?",
+    "snippet": "RVC changes the input audio voice to the cloned voice, and it's pretty good at it. The main issue is that it can't work by itself and relies on ...",
+    "host_name": "www.reddit.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/justinjohn0306/so-vits-svc-4.0-v2",
+    "name": "justinjohn0306/so-vits-svc-4.0-v2: SoftVC VITS Singing Voice  - GitHub",
+    "snippet": "The singing voice conversion model uses SoftVC content encoder to extract source audio speech features, and inputs them together with F0 to replace the ... Missing: tutorial RVC 2024",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=5i_Pyw0gH-M",
+    "name": "RVC V2 Tutorial - Speak in any voice! - Retrieval-based Voice Conversion",
+    "snippet": "aivoices #aivoice #ai #aitutorial #rvc #rvcproject #rvcgui, RVC WebUI, RVC AI Tutorial, RVC GUI Tutorial, RVC Project Tutorial, AI Voice ... Missing: community vits- svc",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI/blob/main/docs/en/README.en.md",
+    "name": "RVC-Project/Retrieval-based-Voice  - GitHub",
+    "snippet": "Easily train a good VC model with voice data. An easy-to-use Voice Conversion framework based on VITS. Check out our Demo Video here! Training and inference Missing: 2024 | Show results with: 2024",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://grokipedia.com/page/retrieval_based_voice_conversion",
+    "name": "Retrieval-based Voice Conversion - Grokipedia",
+    "snippet": "Retrieval-based voice conversion (RVC) is an AI-driven technique that transforms the voice characteristics of a source speaker into those of a target ...",
+    "host_name": "grokipedia.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://techshinobi.org/posts/voice-vits",
+    "name": "A Deep Dive into Voice Cloning with SoftVC VITS and Bert-VITS2",
+    "snippet": "This voice cloning project explores both SVC for Voice Changing and VITS for Text-to-Speech. There is no one tool does all jobs.",
+    "host_name": "techshinobi.org",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

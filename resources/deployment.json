@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.runpod.io/articles/guides/deploy-fastapi-applications-gpu-cloud",
+    "name": "How to Deploy FastAPI Applications with GPU Access in the Cloud",
+    "snippet": "In this guide, we'll walk through building a simple FastAPI API that uses a GPU, packaging it into a Docker container with CUDA support, and deploying it on ... Missing: Gradio voice",
+    "host_name": "www.runpod.io",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://gradio.app/guides/deploying-gradio-with-modal",
+    "name": "Deploying Gradio With Modal",
+    "snippet": "Step 1: Define our modal.Image · Step 2: Wrap the Gradio app in a Modal-deployed FastAPI app · Step 3: Deploying on Modal. Missing: inference | Show results with: inference",
+    "host_name": "gradio.app",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://gradio.app/guides/setting-up-a-demo-for-maximum-performance",
+    "name": "Setting Up A Demo For Maximum Performance - Gradio",
+    "snippet": "Changing the model from running on CPUs to running on GPUs will usually provide a 10x-50x increase in inference time for deep learning models. Missing: cloud optimization",
+    "host_name": "gradio.app",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://gigagpu.com/gradio-ai-demo-dedicated-gpu",
+    "name": "Gradio AI Demo: Deployment on GPU - GIGAGPU",
+    "snippet": "Step-by-step guide to building and deploying a Gradio AI demo on a dedicated GPU server covering chat interfaces, image generation UIs, ...",
+    "host_name": "gigagpu.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@artistwhocode/build-an-interactive-gradio-app-for-python-llms-and-fastapi-microservices-in-less-than-2-minutes-4cf8bc885b16",
+    "name": "Build an Interactive Gradio App for Python LLMs and FastAPI",
+    "snippet": "In this guide, we'll walk you through how to use Gradio to create an interactive web app that can be integrated with an LLM, ML script, or a FastAPI ...",
+    "host_name": "medium.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://modal.com/blog/how_to_run_gradio_on_modal_article",
+    "name": "How to deploy a Gradio app - Modal",
+    "snippet": "Gradio is an open-source Python library. Modal provides a serverless platform that makes deploying Gradio interfaces in the cloud a breeze.",
+    "host_name": "modal.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://gradio.app/guides/fastapi-app-with-the-gradio-client",
+    "name": "Fastapi App With The Gradio Client",
+    "snippet": "In this guide, we will demonstrate how to use the gradio_client Python library, which enables developers to make requests to a Gradio app programmatically, Missing: cloud GPU inference optimization",
+    "host_name": "gradio.app",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.linkedin.com/learning/build-ai-applications-with-gradio/deploying-to-your-own-web-server-via-fastapi-flask",
+    "name": "Deploying to your own web server (via FastAPI or Flask) - Gradio Tutorial",
+    "snippet": "we can deploy the Gradio apps using the FastAPI that will help you to plug your Gradio UI into the FastAPI and serve both together. Missing: GPU inference optimization",
+    "host_name": "www.linkedin.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/gradio-app/fastgradio",
+    "name": "gradio-app/fastgradio - GitHub",
+    "snippet": "gradio.App is a lower-level entrypoint for Gradio that gives you direct access to the underlying FastAPI application. Use it when you need full control: add ... Missing: voice cloud optimization",
+    "host_name": "github.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://cloud.google.com/blog/products/ai-machine-learning/rapidly-build-an-application-in-gradio-power-by-a-generative-ai-agent",
+    "name": "Rapidly build an application in Gradio power by a Generative AI Agent",
+    "snippet": "In this post, we have discussed how to integrate your Gradio conversations with a generative AI agent using Vertex AI Conversation. Missing: FastAPI GPU inference",
+    "host_name": "cloud.google.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
