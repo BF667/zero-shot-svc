@@ -677,32 +677,43 @@ _CSS = """
 }
 #subtitle {
     text-align: center;
-    color: #888;
+    color: #666;
     margin-bottom: 16px;
 }
 #info-box {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    border-radius: 12px;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
     padding: 20px 24px;
-    color: #e0e0e0;
+    color: #333;
     font-size: 14px;
     line-height: 1.7;
 }
 #info-box h3 {
-    color: #64b5f6;
+    color: #222;
     margin-top: 0;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
 }
 #info-box code {
-    background: rgba(255,255,255,0.1);
+    background: #eee;
+    color: #333;
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 13px;
 }
+#info-box ul {
+    padding-left: 20px;
+}
+#info-box li {
+    margin-bottom: 6px;
+}
 #metrics-box {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 16px;
-    color: #94a3b8;
+    color: #444;
     font-size: 13px;
 }
 footer {
@@ -734,11 +745,8 @@ def build_ui():
         # ── Header ──
         gr.HTML("""
         <div id="title">
-            <h1 style="font-size: 2.2em; margin: 0;">
-                <span style="background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa, #ec4899);
-                             -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                    🎤 Zero-Shot Singing Voice Conversion
-                </span>
+            <h1 style="font-size: 2.2em; margin: 0; color: #222;">
+                🎤 Zero-Shot Singing Voice Conversion
             </h1>
         </div>
         <p id="subtitle">
@@ -761,12 +769,10 @@ def build_ui():
                         source_input = gr.Audio(
                             label="🎙️ Source Audio (singing to convert)",
                             type="filepath",
-                            waveform_options=gr.WaveformOptions(waveform_color="#6366f1"),
                         )
                         reference_input = gr.Audio(
                             label="🎯 Reference Audio (target voice, 5-15s recommended)",
                             type="filepath",
-                            waveform_options=gr.WaveformOptions(waveform_color="#22c55e"),
                         )
 
                         # Quick analyze button
@@ -786,7 +792,6 @@ def build_ui():
                             label="✨ Converted Output",
                             type="numpy",
                             interactive=False,
-                            waveform_options=gr.WaveformOptions(waveform_color="#f59e0b"),
                         )
                         
                         # Status/Metrics
@@ -896,7 +901,6 @@ def build_ui():
                         batch_reference = gr.Audio(
                             label="🎯 Reference Audio (target voice)",
                             type="filepath",
-                            waveform_options=gr.WaveformOptions(waveform_color="#22c55e"),
                         )
 
                     with gr.Column(scale=1):
@@ -939,7 +943,7 @@ def build_ui():
                 with gr.Accordion("How it Works", open=True):
                     gr.HTML("""
                     <div id="info-box">
-                        <h3>🔄 Pipeline Overview</h3>
+                        <h3>Pipeline Overview</h3>
                         <p>
                             <strong>Signal Processing</strong> (default): Mel mean-variance normalization +
                             Griffin-Lim reconstruction. Works instantly, no model downloads needed.
@@ -950,7 +954,7 @@ def build_ui():
                             Requires pretrained weights — download via CLI: <code>python main.py download</code>
                         </p>
                         
-                        <h3>🎛️ Parameter Guide</h3>
+                        <h3>Parameter Guide</h3>
                         <ul>
                             <li><strong>Pitch Shift</strong>: Transpose in semitones. Male→Female ~+5 to+12; Female→Male ~-5 to-12.</li>
                             <li><strong>F0 Curve Factor</strong>: Scale the pitch dynamics. >1 exaggerates vibrato, <1 flattens it.</li>
@@ -961,7 +965,7 @@ def build_ui():
                             <li><strong>Noise Reduction</strong>: Clean up noisy input before conversion.</li>
                         </ul>
 
-                        <h3>💡 Best Practices</h3>
+                        <h3>Best Practices</h3>
                         <ul>
                             <li><strong>Reference audio</strong>: 5–15 s clean, dry recording of target voice.</li>
                             <li><strong>Source audio</strong>: Isolated vocals work best. No background music.</li>
