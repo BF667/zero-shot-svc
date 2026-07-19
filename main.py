@@ -1,21 +1,26 @@
 """
 Zero-Shot Singing Voice Conversion - CLI Entry Point
 
-Convert singing voice from source audio to match a reference speaker's voice,
-using RVC-inspired architecture with RMVPE pitch extraction. NO TRAINING REQUIRED.
+Convert singing voice from source audio to match a reference speaker's voice.
+
+Two modes:
+  DEFAULT (signal processing): Works immediately, no pretrained weights needed.
+    Uses mel mean-variance normalization + Griffin-Lim vocoder.
+  NEURAL (--neural flag): Requires pretrained RVC weights.
+    Uses ContentVec + RMVPE + CAM++ + VITS + HiFi-GAN.
 
 Usage Examples:
 
-  # Basic conversion (auto-download models on first run)
-  python main.py convert --source singing.wav --reference target_voice.wav
+  # Basic conversion (signal processing, no models needed)
+  python main.py convert -s singing.wav -r target_voice.wav
 
   # With pitch shift
-  python main.py convert --source singing.wav --reference target_voice.wav --transpose 12
+  python main.py convert -s singing.wav -r target_voice.wav --transpose 12
 
-  # Specify output path
-  python main.py convert --source singing.wav --reference target_voice.wav -o output.wav
+  # Neural mode (requires pretrained weights)
+  python main.py convert -s singing.wav -r target_voice.wav --neural
 
-  # Download pretrained weights only
+  # Download pretrained weights
   python main.py download
 
   # Check weight status
@@ -31,22 +36,16 @@ import argparse
 
 def cmd_convert(args):
     """Run voice conversion."""
-    # Add project root to path
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
     from pipeline.voice_converter import ZeroShotSVC
     from utils.hparams import Config
 
-    # Load config
     config = Config.from_yaml(args.config)
 
-    # Create converter
-    svc = ZeroShotSVC(config=config, device=args.device)
+    # Signal processing by default, neural if --neural
+    svc = ZeroShotSVC(config=config, device=args.device, use_neural=args.neural)
 
-    # Load models
-    svc.load_models()
-
-    # Convert
     output_path = svc.convert(
         source_path=args.source,
         reference_path=args.reference,
@@ -93,7 +92,7 @@ def cmd_features(args):
     from utils.hparams import Config
 
     config = Config.from_yaml(args.config)
-    svc = ZeroShotSVC(config=config, device=args.device)
+    svc = ZeroShotSVC(config=config, device=args.device, use_neural=True)
     svc.load_models()
 
     features = svc.extract_features(args.audio)
@@ -119,7 +118,7 @@ def cmd_extract_embedding(args):
     from utils.hparams import Config
 
     config = Config.from_yaml(args.config)
-    svc = ZeroShotSVC(config=config, device=args.device)
+    svc = ZeroShotSVC(config=config, device=args.device, use_neural=True)
     svc.load_models()
 
     embedding = svc.extract_speaker_embedding(args.reference)
@@ -129,7 +128,6 @@ def cmd_extract_embedding(args):
     print(f"  Max:     {embedding.max():.4f}")
     print(f"  Mean:    {embedding.mean():.4f}")
 
-    # Save if requested
     if args.save:
         import numpy as np
         np.save(args.save, embedding)
@@ -138,12 +136,13 @@ def cmd_extract_embedding(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Zero-Shot Singing Voice Conversion (RVC-based, RMVPE F0)",
+        description="Zero-Shot Singing Voice Conversion",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   python main.py convert -s singing.wav -r voice_ref.wav -o output.wav
   python main.py convert -s singing.wav -r voice_ref.wav --transpose 12
+  python main.py convert -s singing.wav -r voice_ref.wav --neural
   python main.py download
   python main.py check
   python main.py features -a test.wav
@@ -153,6 +152,9 @@ Examples:
                         help="Device: 'cpu' or 'cuda' (auto-detect)")
     parser.add_argument("--config", type=str, default=None,
                         help="Path to config YAML file")
+    parser.add_argument("--neural", action="store_true",
+                        help="Use neural pipeline (requires pretrained weights). "
+                             "Default: signal processing (works without models).")
 
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
@@ -166,7 +168,7 @@ Examples:
     p_convert.add_argument("--f0-curve", type=float, default=1.0,
                            help="F0 curve scaling factor")
     p_convert.add_argument("--noise-scale", type=float, default=0.4,
-                           help="Generation noise scale (higher = more variation)")
+                           help="Generation noise scale (neural mode only)")
 
     # Download command
     p_download = subparsers.add_parser("download", help="Download pretrained weights")

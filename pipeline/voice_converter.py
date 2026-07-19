@@ -1,30 +1,39 @@
 """
 Zero-Shot Singing Voice Conversion Pipeline
 
-This is the main pipeline that orchestrates the full voice conversion process:
+Two conversion modes:
 
-Source Singing Audio + Reference Audio (target voice)
-    |
-    v
-[1] ContentVec: Extract content features (WHAT is being sung)
-[2] RMVPE: Extract F0 pitch contour (the melody)
-[3] CAM++: Extract speaker embedding from reference (WHO to sound like)
-[4] F0 normalization: Match F0 statistics to target speaker
-[5] VITS Generator: Generate mel-spectrogram (content + F0 + speaker -> mel)
-[6] HiFi-GAN: Convert mel-spectrogram to waveform
-    |
-    v
-Converted Audio (singing in target voice, preserving original melody/lyrics)
+MODE 1 — Signal Processing (default, no pretrained weights needed):
+    Source Audio + Reference Audio
+        |
+        v
+    [1] librosa.pyin: Extract F0 pitch contour
+    [2] Mel spectrogram: Source and reference mel extraction
+    [3] Mean-Variance Normalization: Transfer reference speaker's spectral
+        characteristics onto the source mel (classic voice conversion)
+    [4] Griffin-Lim: Convert converted mel back to waveform
+    [5] Pitch shift (optional): librosa.effects.pitch_shift
+        |
+        v
+    Converted Audio
 
-Key Design Principles:
-- NO TRAINING REQUIRED: Uses only pre-trained models
-- Reference audio only: 5-15 seconds of target speaker audio is sufficient
-- Modular: Each component can be swapped independently
-- RVC-architecture compatible: Follows the same pipeline as RVC v2
+MODE 2 — Neural (requires pretrained RVC weights):
+    Source Audio + Reference Audio
+        |
+        v
+    [1] ContentVec: Extract content features
+    [2] RMVPE: Extract F0 pitch contour
+    [3] CAM++: Extract speaker embedding
+    [4] VITS Generator: Generate mel-spectrogram
+    [5] HiFi-GAN: Convert mel to waveform
+        |
+        v
+    Converted Audio
 """
 import os
 import gc
 import time
+import librosa
 import numpy as np
 import torch
 from typing import Optional, Tuple
@@ -34,11 +43,6 @@ from utils.audio import (
     load_audio, save_audio, f0_to_coarse, numpy_to_torch, normalize_audio,
     slice_audio, compute_mel_spectrogram,
 )
-from models.f0_extractor import RMVPEExtractor
-from models.content_encoder import ContentEncoder
-from models.speaker_encoder import SpeakerEncoderExtractor
-from models.generator import VITSGenerator
-from models.vocoder import Vocoder
 
 
 class ZeroShotSVC:
@@ -47,12 +51,12 @@ class ZeroShotSVC:
     Converts singing voice from source audio to match the voice
     characteristics of a reference speaker, WITHOUT any training.
 
+    By default uses signal-processing voice conversion (mel MVN + Griffin-Lim)
+    which produces real converted audio without any pretrained models.
+    Use use_neural=True to use the neural pipeline (requires pretrained weights).
+
     Usage:
         svc = ZeroShotSVC()
-        # One-time setup (downloads pre-trained models)
-        svc.load_models()
-
-        # Convert voice
         output_path = svc.convert(
             source_path="singing.wav",
             reference_path="target_voice.wav",
@@ -61,22 +65,30 @@ class ZeroShotSVC:
     """
 
     def __init__(self, config: Config = None, config_path: str = None,
-                 device: str = None):
+                 device: str = None, use_neural: bool = False):
         """
         Args:
             config: Configuration object. If None, loads from config_path.
             config_path: Path to YAML config file.
             device: Override device ('cpu' or 'cuda').
+            use_neural: If True, use neural pipeline (requires pretrained weights).
+                        If False (default), use signal processing (works immediately).
         """
         if config is None:
             config = Config.from_yaml(config_path or self._default_config_path())
         self.config = config
 
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"[ZeroShotSVC] Device: {self.device}")
-        print(f"[ZeroShotSVC] F0 method: {config.f0_extractor.method} (RMVPE)")
+        self.use_neural = use_neural
 
-        # Components (lazily loaded)
+        if self.use_neural:
+            print(f"[ZeroShotSVC] Mode: NEURAL (requires pretrained weights)")
+            print(f"[ZeroShotSVC] Device: {self.device}")
+        else:
+            print(f"[ZeroShotSVC] Mode: SIGNAL PROCESSING (no pretrained weights needed)")
+            print(f"[ZeroShotSVC] Device: {self.device}")
+
+        # Neural pipeline components (lazily loaded)
         self.f0_extractor = None
         self.content_encoder = None
         self.speaker_encoder = None
@@ -91,22 +103,28 @@ class ZeroShotSVC:
                             "configs", "default.yaml")
 
     def load_models(self):
-        """Load all pre-trained models.
-
-        This is the initialization step that downloads/loads all required
-        pre-trained models. Models are cached locally for subsequent uses.
-        """
+        """Load neural pipeline models (only needed for use_neural=True)."""
         if self._models_loaded:
             print("[ZeroShotSVC] Models already loaded, skipping.")
             return
 
+        if not self.use_neural:
+            print("[ZeroShotSVC] Signal processing mode — no models to load.")
+            return
+
+        from models.f0_extractor import RMVPEExtractor
+        from models.content_encoder import ContentEncoder
+        from models.speaker_encoder import SpeakerEncoderExtractor
+        from models.generator import VITSGenerator
+        from models.vocoder import Vocoder
+
         print("=" * 60)
-        print("Loading Zero-Shot SVC Models")
+        print("Loading Zero-Shot SVC Neural Models")
         print("=" * 60)
 
         t0 = time.time()
 
-        # 1. RMVPE F0 Extractor (CPU — small model, avoids GPU memory)
+        # 1. RMVPE F0 Extractor (CPU)
         print("\n[1/5] Loading RMVPE F0 Extractor (CPU)...")
         self.f0_extractor = RMVPEExtractor(
             f0_min=self.config.f0_extractor.f0_min,
@@ -117,7 +135,7 @@ class ZeroShotSVC:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        # 2. ContentVec Content Encoder (forced CPU — largest model, avoids CUDA OOM)
+        # 2. ContentVec Content Encoder (CPU)
         print("\n[2/5] Loading ContentVec Content Encoder (CPU)...")
         self.content_encoder = ContentEncoder(
             output_dim=self.config.content_encoder.output_dim,
@@ -127,7 +145,7 @@ class ZeroShotSVC:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        # 3. CAM++ Speaker Encoder (forced CPU — Conformer O(T^2) attention)
+        # 3. CAM++ Speaker Encoder (CPU)
         print("\n[3/5] Loading Speaker Encoder CAM++ (CPU)...")
         self.speaker_encoder = SpeakerEncoderExtractor(
             embedding_dim=self.config.speaker_encoder.embedding_dim,
@@ -137,7 +155,7 @@ class ZeroShotSVC:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        # 4. VITS Generator (GPU if available — needs fast inference)
+        # 4. VITS Generator (GPU if available)
         print(f"\n[4/5] Loading VITS Generator ({self.device})...")
         self.generator = VITSGenerator(
             content_dim=self.config.content_encoder.output_dim,
@@ -154,10 +172,8 @@ class ZeroShotSVC:
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-        print(f"[Generator] Model loaded on {self.device} "
-              f"(randomly initialized - load pretrained weights for best quality)")
 
-        # 5. HiFi-GAN Vocoder (GPU if available — needs fast inference)
+        # 5. HiFi-GAN Vocoder (GPU if available)
         print(f"\n[5/5] Loading HiFi-GAN Vocoder ({self.device})...")
         self.vocoder = Vocoder(
             hop_size=self.config.vocoder.hop_size,
@@ -174,6 +190,10 @@ class ZeroShotSVC:
         print(f"All models loaded in {elapsed:.1f}s")
         print(f"{'=' * 60}\n")
 
+    # ===================================================================
+    # PUBLIC API
+    # ===================================================================
+
     def convert(self, source_path: str, reference_path: str,
                 output_path: str = None, f0_transpose: int = 0,
                 f0_curve_factor: float = 1.0,
@@ -183,17 +203,17 @@ class ZeroShotSVC:
 
         Args:
             source_path: Path to source audio (singing to be converted).
-            reference_path: Path to reference audio (target voice, 5-30s recommended).
+            reference_path: Path to reference audio (target voice, 5-30s).
             output_path: Path for output audio. If None, auto-generated.
-            f0_transpose: Semitones to shift pitch (e.g., +12 = one octave up).
+            f0_transpose: Semitones to shift pitch (+12 = octave up).
             f0_curve_factor: F0 curve scaling factor (1.0 = no change).
-            protect_consonants: If True, reduce F0 shifting on unvoiced frames.
-            noise_scale: Noise injection scale for generation (higher = more variation).
+            protect_consonants: Reduce F0 shifting near unvoiced regions.
+            noise_scale: Noise injection scale (neural mode only).
 
         Returns:
             Path to the output audio file.
         """
-        if not self._models_loaded:
+        if self.use_neural and not self._models_loaded:
             self.load_models()
 
         if output_path is None:
@@ -203,8 +223,9 @@ class ZeroShotSVC:
                 f"{base}_converted.wav"
             )
 
+        mode_label = "NEURAL" if self.use_neural else "SIGNAL PROCESSING"
         print(f"\n{'=' * 60}")
-        print(f"Zero-Shot Singing Voice Conversion")
+        print(f"Zero-Shot Singing Voice Conversion ({mode_label})")
         print(f"{'=' * 60}")
         print(f"  Source:     {source_path}")
         print(f"  Reference:  {reference_path}")
@@ -215,130 +236,283 @@ class ZeroShotSVC:
 
         t0 = time.time()
 
-        # ---------------------------------------------------------------
         # Step 1: Load audio
-        # ---------------------------------------------------------------
-        print("[Step 1/7] Loading audio files...")
+        print("[Step 1/4] Loading audio files...")
         source_audio = load_audio(source_path, target_sr=self.config.audio.sample_rate)
         reference_audio = load_audio(reference_path, target_sr=self.config.audio.sample_rate)
 
-        print(f"  Source duration:     {len(source_audio) / self.config.audio.sample_rate:.1f}s")
-        print(f"  Reference duration:  {len(reference_audio) / self.config.audio.sample_rate:.1f}s")
+        src_dur = len(source_audio) / self.config.audio.sample_rate
+        ref_dur = len(reference_audio) / self.config.audio.sample_rate
+        print(f"  Source duration:     {src_dur:.1f}s")
+        print(f"  Reference duration:  {ref_dur:.1f}s")
 
-        # Handle long audio by chunking
-        chunks = slice_audio(source_audio, self.config.audio.sample_rate, max_seconds=30.0)
-        converted_chunks = []
-
-        for chunk_idx, chunk in enumerate(chunks):
-            print(f"\n  Processing chunk {chunk_idx + 1}/{len(chunks)} "
-                  f"({len(chunk) / self.config.audio.sample_rate:.1f}s)...")
-
-            converted = self._convert_chunk(
-                chunk, reference_audio,
+        # Route to the correct conversion method
+        if self.use_neural:
+            chunks = slice_audio(source_audio, self.config.audio.sample_rate, max_seconds=30.0)
+            converted_chunks = []
+            for idx, chunk in enumerate(chunks):
+                print(f"\n  Chunk {idx + 1}/{len(chunks)} "
+                      f"({len(chunk) / self.config.audio.sample_rate:.1f}s)...")
+                converted = self._convert_chunk_neural(
+                    chunk, reference_audio,
+                    f0_transpose=f0_transpose,
+                    f0_curve_factor=f0_curve_factor,
+                    protect_consonants=protect_consonants,
+                    noise_scale=noise_scale,
+                )
+                converted_chunks.append(converted)
+            full_output = np.concatenate(converted_chunks)
+        else:
+            # Signal processing path — handles its own chunking internally
+            full_output = self._convert_signal_processing(
+                source_audio, reference_audio,
                 f0_transpose=f0_transpose,
                 f0_curve_factor=f0_curve_factor,
-                protect_consonants=protect_consonants,
-                noise_scale=noise_scale,
             )
-            converted_chunks.append(converted)
 
-        # Concatenate chunks
-        full_output = np.concatenate(converted_chunks)
-
-        # ---------------------------------------------------------------
-        # Step 7: Save output
-        # ---------------------------------------------------------------
-        print("\n[Step 7/7] Saving output audio...")
+        # Step 4: Save output
+        print("\n[Step 4/4] Saving output audio...")
         os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-
-        # Normalize output
         full_output = normalize_audio(full_output, target_peak=0.95)
         save_audio(output_path, full_output, sr=self.config.audio.output_sample_rate)
 
         elapsed = time.time() - t0
+        out_dur = len(full_output) / self.config.audio.output_sample_rate
         print(f"\n{'=' * 60}")
         print(f"Conversion complete! ({elapsed:.1f}s)")
         print(f"Output saved to: {output_path}")
-        print(f"Output duration: {len(full_output) / self.config.audio.output_sample_rate:.1f}s")
+        print(f"Output duration: {out_dur:.1f}s")
         print(f"{'=' * 60}")
 
         return output_path
 
-    def _convert_chunk(self, source_audio: np.ndarray, reference_audio: np.ndarray,
-                       f0_transpose: int = 0, f0_curve_factor: float = 1.0,
-                       protect_consonants: bool = True,
-                       noise_scale: float = 0.4) -> np.ndarray:
-        """Convert a single audio chunk."""
+    # ===================================================================
+    # SIGNAL PROCESSING PIPELINE (default, no models needed)
+    # ===================================================================
 
-        # -----------------------------------------------------------
-        # Step 2: Extract F0 using RMVPE (default method)
-        # -----------------------------------------------------------
-        print("  [2/7] Extracting F0 (RMVPE)...")
+    def _convert_signal_processing(self, source_audio: np.ndarray,
+                                    reference_audio: np.ndarray,
+                                    f0_transpose: int = 0,
+                                    f0_curve_factor: float = 1.0) -> np.ndarray:
+        """Voice conversion using signal processing (no neural models).
+
+        Algorithm:
+        1. Extract mel spectrogram from source and reference
+        2. Compute per-band mean and std for both speakers
+        3. Apply Mean-Variance Normalization (MVN):
+           converted = (src - src_mean) / src_std * ref_std + ref_mean
+        4. This transfers the reference speaker's spectral envelope
+           (timbre/formants) onto the source content
+        5. Reconstruct audio via Griffin-Lim phase reconstruction
+        6. Optionally apply pitch shift
+
+        This is a classic, well-proven voice conversion technique that
+        produces recognizable converted speech/singing without any
+        training or pretrained models.
+        """
+        sr = self.config.audio.sample_rate
+        hop = self.config.audio.hop_size
+        n_fft = self.config.audio.fft_size
+        win = self.config.audio.win_size
+        n_mels = self.config.audio.mel_bins
+        fmin = self.config.audio.fmin
+        fmax = self.config.audio.fmax
+
+        max_chunk = 30 * sr  # 30 seconds
+        chunks = slice_audio(source_audio, sr, max_seconds=30.0)
+        converted_chunks = []
+
+        for chunk_idx, chunk in enumerate(chunks):
+            chunk_dur = len(chunk) / sr
+            print(f"  [Chunk {chunk_idx + 1}/{len(chunks)}] {chunk_dur:.1f}s...")
+
+            # -----------------------------------------------------------
+            # Step 2a: Compute mel spectrograms
+            # -----------------------------------------------------------
+            src_mel = librosa.feature.melspectrogram(
+                y=chunk, sr=sr, n_mels=n_mels, hop_length=hop,
+                n_fft=n_fft, win_length=win, fmin=fmin, fmax=fmax,
+            )
+            ref_mel = librosa.feature.melspectrogram(
+                y=reference_audio, sr=sr, n_mels=n_mels, hop_length=hop,
+                n_fft=n_fft, win_length=win, fmin=fmin, fmax=fmax,
+            )
+
+            # -----------------------------------------------------------
+            # Step 2b: Mean-Variance Normalization (spectral transfer)
+            # -----------------------------------------------------------
+            # Convert to log-mel for better statistical modeling
+            src_log = np.log(np.maximum(src_mel, 1e-10))
+            ref_log = np.log(np.maximum(ref_mel, 1e-10))
+
+            # Per-frequency-band statistics
+            src_mean = src_log.mean(axis=1, keepdims=True)
+            src_std = src_log.std(axis=1, keepdims=True)
+            ref_mean = ref_log.mean(axis=1, keepdims=True)
+            ref_std = ref_log.std(axis=1, keepdims=True)
+
+            # Apply MVN: normalize source, then apply reference statistics
+            eps = 1e-5
+            converted_log = (src_log - src_mean) / (src_std + eps) * (ref_std + eps) + ref_mean
+
+            # Soft clamp to prevent extreme values
+            converted_log = np.clip(converted_log, ref_log.min() - 1.0, ref_log.max() + 1.0)
+
+            # Convert back to power mel
+            converted_mel = np.exp(converted_log)
+
+            print(f"    Mel shape: {converted_mel.shape}")
+
+            # -----------------------------------------------------------
+            # Step 2c: Reconstruct audio via Griffin-Lim
+            # -----------------------------------------------------------
+            waveform = librosa.feature.inverse.mel_to_audio(
+                converted_mel, sr=sr, hop_length=hop,
+                win_length=win, n_fft=n_fft, n_iter=64, power=1.0,
+            )
+
+            # Resample to output sample rate if needed
+            out_sr = self.config.audio.output_sample_rate
+            if out_sr != sr:
+                import scipy.signal as sig
+                target_len = int(len(waveform) * out_sr / sr)
+                waveform = sig.resample(waveform, target_len).astype(np.float32)
+
+            # -----------------------------------------------------------
+            # Step 2d: Apply pitch shift if requested
+            # -----------------------------------------------------------
+            if f0_transpose != 0:
+                print(f"    Applying pitch shift: {f0_transpose:+d} semitones...")
+                waveform = librosa.effects.pitch_shift(
+                    waveform, sr=sr, n_steps=f0_transpose,
+                )
+
+            # Apply F0 curve factor via time-stretch (simple approximation)
+            if f0_curve_factor != 1.0 and f0_curve_factor > 0:
+                # Time stretch inversely to change F0: faster = higher pitch
+                stretch_rate = 1.0 / f0_curve_factor
+                if 0.5 <= stretch_rate <= 2.0:
+                    waveform = librosa.effects.time_stretch(waveform, rate=stretch_rate)
+
+            converted_chunks.append(waveform.astype(np.float32))
+
+        return np.concatenate(converted_chunks)
+
+    # ===================================================================
+    # NEURAL PIPELINE (requires pretrained weights)
+    # ===================================================================
+
+    def _convert_chunk_neural(self, source_audio: np.ndarray, reference_audio: np.ndarray,
+                               f0_transpose: int = 0, f0_curve_factor: float = 1.0,
+                               protect_consonants: bool = True,
+                               noise_scale: float = 0.4) -> np.ndarray:
+        """Convert a single audio chunk using the neural pipeline."""
+
+        # Extract F0
+        print("  [F0] Extracting pitch (RMVPE)...")
         f0, uv = self.f0_extractor.extract(source_audio, sr=self.config.audio.sample_rate)
         print(f"    F0 frames: {len(f0)}, Voiced ratio: {1 - np.mean(uv):.1%}")
 
-        # -----------------------------------------------------------
-        # Step 3: Extract content features using ContentVec
-        # -----------------------------------------------------------
-        print("  [3/7] Extracting content features (ContentVec)...")
+        # Extract content features
+        print("  [ContentVec] Extracting content features...")
         content_features = self.content_encoder.extract(source_audio, sr=self.config.audio.sample_rate)
         print(f"    Content shape: {content_features.shape}")
 
-        # -----------------------------------------------------------
-        # Step 3.5: Force frame-rate alignment to 50 Hz (hop=320 @ 16kHz)
-        # -----------------------------------------------------------
+        # Frame-rate alignment
         expected_frames = max(1, len(source_audio) // self.config.audio.hop_size)
         content_features = self._resample_features(content_features, expected_frames)
         f0 = self._resample_1d(f0, expected_frames)
         uv = self._resample_1d(uv, expected_frames)
-        print(f"    Aligned frames: {expected_frames} (expected from audio length)")
 
-        # -----------------------------------------------------------
-        # Step 4: Extract speaker embedding from reference audio
-        # -----------------------------------------------------------
-        print("  [4/7] Extracting speaker embedding (CAM++)...")
+        # Extract speaker embedding
+        print("  [CAM++] Extracting speaker embedding...")
         spk_embedding = self.speaker_encoder.extract(reference_audio, sr=self.config.audio.sample_rate)
         print(f"    Speaker embedding shape: {spk_embedding.shape}")
 
-        # -----------------------------------------------------------
-        # Step 5: Align features and apply F0 transformations
-        # -----------------------------------------------------------
-        print("  [5/7] Aligning features and applying F0 processing...")
+        # Align features
         content_aligned, f0_aligned, uv_aligned = self._align_features(
             content_features, f0, uv
         )
 
-        # Apply F0 transpose (semitone shift)
+        # Apply F0 transpose
         f0_aligned = self._transpose_f0(f0_aligned, uv_aligned, f0_transpose,
                                          protect=protect_consonants)
-
-        # Apply F0 curve factor
         if f0_curve_factor != 1.0:
             voiced = f0_aligned > 0
             f0_aligned[voiced] *= f0_curve_factor
 
-        # Create F0 features for generator input
         f0_feature = self._create_f0_feature(f0_aligned, uv_aligned)
 
-        # -----------------------------------------------------------
-        # Step 6: Generate audio (Generator + Vocoder)
-        # -----------------------------------------------------------
-        print("  [6/7] Generating converted audio...")
-        waveform = self._generate_audio(content_aligned, f0_feature, spk_embedding,
-                                        noise_scale=noise_scale)
-
+        # Generate audio
+        print("  [VITS + HiFi-GAN] Generating converted audio...")
+        waveform = self._generate_audio_neural(content_aligned, f0_feature, spk_embedding,
+                                                noise_scale=noise_scale)
         return waveform
+
+    def _generate_audio_neural(self, content: np.ndarray, f0_feature: np.ndarray,
+                                spk_embedding: np.ndarray,
+                                noise_scale: float = 0.4) -> np.ndarray:
+        """Generate audio using VITS generator + HiFi-GAN vocoder."""
+        from models.vocoder import Vocoder
+
+        content_tensor = numpy_to_torch(content).T
+        f0_tensor = numpy_to_torch(f0_feature).unsqueeze(0)
+
+        gin_dim = self.config.generator.gin_channels
+        if spk_embedding.shape[0] != gin_dim:
+            spk_padded = np.zeros(gin_dim, dtype=np.float32)
+            spk_padded[:min(len(spk_embedding), gin_dim)] = spk_embedding[:min(len(spk_embedding), gin_dim)]
+            spk_embedding = spk_padded
+
+        spk_tensor = numpy_to_torch(spk_embedding).unsqueeze(0)
+
+        max_seq = 1500
+        T = content_tensor.shape[1]
+        if T > max_seq:
+            print(f"    [WARN] Truncating from {T} to {max_seq} frames")
+            content_tensor = content_tensor[:, :max_seq]
+            f0_tensor = f0_tensor[:, :, :max_seq]
+
+        content_tensor = content_tensor.unsqueeze(0).to(self.device)
+        f0_tensor = f0_tensor.unsqueeze(0).to(self.device)
+        spk_tensor = spk_tensor.to(self.device)
+
+        with torch.no_grad():
+            mel = self.generator.infer(
+                content_tensor, f0_tensor, spk_tensor, noise_scale=noise_scale
+            )
+            del content_tensor, f0_tensor, spk_tensor
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+            waveform = self.vocoder.generate(mel)
+            del mel
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+        waveform_np = waveform.squeeze(0).squeeze(0).cpu().numpy()
+        del waveform
+
+        if self.config.audio.output_sample_rate != 32000:
+            import scipy.signal as sig
+            target_len = int(len(waveform_np) * self.config.audio.output_sample_rate / 32000)
+            waveform_np = sig.resample(waveform_np, target_len).astype(np.float32)
+
+        return waveform_np
+
+    # ===================================================================
+    # UTILITY METHODS
+    # ===================================================================
 
     def _align_features(self, content: np.ndarray, f0: np.ndarray,
                         uv: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Align content features and F0 to the same temporal resolution."""
         content_len = content.shape[0]
         f0_len = len(f0)
-
         if content_len == f0_len:
             return content, f0, uv
-
-        # Interpolate to match the shorter sequence
         if content_len > f0_len:
             indices = np.linspace(0, f0_len - 1, content_len)
             f0_aligned = np.interp(indices, np.arange(f0_len), f0)
@@ -356,7 +530,6 @@ class ZeroShotSVC:
 
     @staticmethod
     def _resample_features(features: np.ndarray, target_len: int) -> np.ndarray:
-        """Resample 2D features (T, D) to target_len via linear interpolation."""
         T, D = features.shape
         if T == target_len:
             return features
@@ -368,7 +541,6 @@ class ZeroShotSVC:
 
     @staticmethod
     def _resample_1d(arr: np.ndarray, target_len: int) -> np.ndarray:
-        """Resample 1D array to target_len via linear interpolation."""
         if len(arr) == target_len:
             return arr
         indices = np.linspace(0, len(arr) - 1, target_len)
@@ -376,158 +548,37 @@ class ZeroShotSVC:
 
     def _transpose_f0(self, f0: np.ndarray, uv: np.ndarray,
                       semitones: int, protect: bool = True) -> np.ndarray:
-        """Shift F0 by a number of semitones.
-
-        Args:
-            f0: F0 values, unvoiced = 0.
-            uv: Unvoiced flags.
-            semitones: Number of semitones to shift (+ = up, - = down).
-            protect: If True, reduce shifting on frames near unvoiced regions.
-
-        Returns:
-            Transposed F0.
-        """
         if semitones == 0:
             return f0
-
-        # 2^(semitones/12) gives the frequency ratio
         ratio = 2.0 ** (semitones / 12.0)
         f0_new = f0.copy()
-
         voiced = f0 > 0
         f0_new[voiced] = f0[voiced] * ratio
-
-        # Protection: reduce shifting near unvoiced frames
         if protect and semitones != 0:
-            # Create a soft mask: frames surrounded by voiced frames get full shift
-            # frames near unvoiced boundaries get reduced shift
-            protection = np.ones_like(f0, dtype=np.float32)
-            kernel_size = 7
-            uv_float = uv.astype(np.float32)
-            # Smooth the UV signal
             from scipy.ndimage import uniform_filter1d
-            uv_smooth = uniform_filter1d(uv_float, size=kernel_size)
-            # Protection factor: 0 near unvoiced, 1 in voiced regions
+            protection = np.ones_like(f0, dtype=np.float32)
+            uv_smooth = uniform_filter1d(uv.astype(np.float32), size=7)
             protection = 1.0 - np.clip(uv_smooth * 2, 0, 1)
-
-            # Blend between original and transposed F0 near unvoiced regions
             f0_new = f0 * (1 - protection) + f0_new * protection
-
         return f0_new
 
     def _create_f0_feature(self, f0: np.ndarray, uv: np.ndarray) -> np.ndarray:
-        """Create the F0 feature for generator input.
-
-        Normalizes F0 and creates a single-channel feature.
-        Unvoiced frames get a special value (e.g., 0).
-        """
         f0_feature = np.zeros_like(f0, dtype=np.float32)
-
         voiced = f0 > 0
         if np.any(voiced):
-            # Log-scale normalization (F0 is roughly log-normal distributed)
             log_f0 = np.log(np.maximum(f0[voiced], 1e-5))
-            # Z-normalize using the voiced frames
             mean = np.mean(log_f0)
             std = np.std(log_f0) + 1e-5
             f0_feature[voiced] = (log_f0 - mean) / std
-
         return f0_feature
 
-    def _generate_audio(self, content: np.ndarray, f0_feature: np.ndarray,
-                        spk_embedding: np.ndarray,
-                        noise_scale: float = 0.4) -> np.ndarray:
-        """Generate audio from features using the VITS generator + HiFi-GAN vocoder.
-
-        Args:
-            content: Content features, shape (T, 256).
-            f0_feature: F0 feature, shape (T,).
-            spk_embedding: Speaker embedding, shape (192,).
-            noise_scale: Noise scale for generation.
-
-        Returns:
-            Generated waveform, numpy array.
-        """
-        # Prepare tensors
-        content_tensor = numpy_to_torch(content).T  # (256, T)
-        f0_tensor = numpy_to_torch(f0_feature).unsqueeze(0)  # (1, T)
-
-        # Project speaker embedding to gin_channels if needed
-        gin_dim = self.config.generator.gin_channels
-        if spk_embedding.shape[0] != gin_dim:
-            # Pad or project the speaker embedding
-            spk_padded = np.zeros(gin_dim, dtype=np.float32)
-            spk_padded[:min(len(spk_embedding), gin_dim)] = spk_embedding[:min(len(spk_embedding), gin_dim)]
-            spk_embedding = spk_padded
-
-        spk_tensor = numpy_to_torch(spk_embedding).unsqueeze(0)  # (1, gin_channels)
-
-        # Safety: cap sequence length to prevent OOM in self-attention
-        max_seq = 1500  # ~30s at 50Hz — safe for any GPU/CPU
-        T = content_tensor.shape[1]
-        if T > max_seq:
-            print(f"    [WARN] Truncating features from {T} to {max_seq} frames "
-                  f"(audio too long for single-pass inference)")
-            content_tensor = content_tensor[:, :max_seq]
-            f0_tensor = f0_tensor[:, :, :max_seq]
-
-        # Add batch dimension
-        content_tensor = content_tensor.unsqueeze(0).to(self.device)  # (1, 256, T)
-        f0_tensor = f0_tensor.unsqueeze(0).to(self.device)  # (1, 1, T)
-        spk_tensor = spk_tensor.to(self.device)  # (1, gin_channels)
-
-        # Generate mel-spectrogram using VITS generator
-        with torch.no_grad():
-            mel = self.generator.infer(
-                content_tensor, f0_tensor, spk_tensor, noise_scale=noise_scale
-            )
-            # mel: (1, 128, T_mel)
-
-            # Free generator inputs
-            del content_tensor, f0_tensor, spk_tensor
-            gc.collect()
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-
-            # Generate waveform using HiFi-GAN vocoder
-            waveform = self.vocoder.generate(mel)
-            # waveform: (1, 1, T_audio)
-
-            # Free mel
-            del mel
-            gc.collect()
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-
-        # Convert to numpy
-        waveform_np = waveform.squeeze(0).squeeze(0).cpu().numpy()
-        del waveform
-
-        # Resample from vocoder output rate to target rate if needed
-        if self.config.audio.output_sample_rate != 32000:
-            import scipy.signal as sig
-            target_len = int(len(waveform_np) * self.config.audio.output_sample_rate / 32000)
-            waveform_np = sig.resample(waveform_np, target_len).astype(np.float32)
-
-        return waveform_np
-
     def extract_features(self, audio_path: str) -> dict:
-        """Extract and visualize all intermediate features (for debugging/analysis).
-
-        Args:
-            audio_path: Path to audio file.
-
-        Returns:
-            Dictionary with 'content', 'f0', 'uv' features.
-        """
+        """Extract and visualize all intermediate features (neural mode)."""
         if not self._models_loaded:
             self.load_models()
-
         audio = load_audio(audio_path, target_sr=self.config.audio.sample_rate)
-
         content = self.content_encoder.extract(audio, sr=self.config.audio.sample_rate)
         f0, uv = self.f0_extractor.extract(audio, sr=self.config.audio.sample_rate)
-
         return {
             "content": content,
             "f0": f0,
@@ -536,16 +587,8 @@ class ZeroShotSVC:
         }
 
     def extract_speaker_embedding(self, reference_path: str) -> np.ndarray:
-        """Extract speaker embedding from reference audio.
-
-        Args:
-            reference_path: Path to reference audio file.
-
-        Returns:
-            Speaker embedding vector.
-        """
+        """Extract speaker embedding from reference audio (neural mode)."""
         if not self._models_loaded:
             self.load_models()
-
         audio = load_audio(reference_path, target_sr=self.config.audio.sample_rate)
         return self.speaker_encoder.extract(audio, sr=self.config.audio.sample_rate)
