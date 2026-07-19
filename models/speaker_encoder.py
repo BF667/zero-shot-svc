@@ -173,18 +173,25 @@ class SpeakerEncoder(nn.Module):
     Architecture:
     1. Multi-scale CNN frontend
     2. Linear projection to conformer dimension
-    3. Stack of Conformer blocks
-    4. Attentive temporal pooling
-    5. Final projection to speaker embedding
+    3. Adaptive temporal pooling (reduces T' to fixed size to prevent OOM)
+    4. Stack of Conformer blocks
+    5. Attentive temporal pooling
+    6. Final projection to speaker embedding
 
     This is architecturally faithful to CAM++ as described in:
     "CAM++: A Unified Conformer-based Multi-scale Approach for Text-independent
      Speaker Verification" (Chen et al., 2022)
+
+    CRITICAL: The multi-scale CNN frontend produces T' frames that can be very
+    large for long reference audio (e.g., T'~43K for 30s audio). Without pooling,
+    the Conformer self-attention would require O(T'^2) memory (~30GB), causing
+    OOM on both GPU and CPU. The adaptive pool caps T' at `pool_size`.
     """
 
     def __init__(self, embedding_dim: int = 192, conformer_dim: int = 256,
                  num_layers: int = 6, num_heads: int = 4,
-                 ffn_dim: int = 1024, dropout: float = 0.1):
+                 ffn_dim: int = 1024, dropout: float = 0.1,
+                 pool_size: int = 512):
         super().__init__()
         self.embedding_dim = embedding_dim
 
@@ -194,6 +201,12 @@ class SpeakerEncoder(nn.Module):
 
         # Project to conformer dimension
         self.input_proj = nn.Linear(frontend_out_dim, conformer_dim)
+
+        # CRITICAL: Adaptive temporal pooling to cap sequence length.
+        # Without this, Conformer self-attention on T'~43K frames would
+        # require ~30GB memory (T'^2 * heads * 4 bytes), causing OOM.
+        # Pooling to 512 frames keeps attention at ~4MB per layer.
+        self.temporal_pool = nn.AdaptiveAvgPool1d(pool_size)
 
         # Conformer blocks
         self.conformer_layers = nn.ModuleList([
@@ -230,13 +243,18 @@ class SpeakerEncoder(nn.Module):
         # Project to conformer dim
         h = self.input_proj(h)  # (B, T', 256)
 
+        # Adaptive temporal pooling: (B, T', 256) -> (B, 256, T') -> (B, 256, 512) -> (B, 512, 256)
+        h = h.transpose(1, 2)  # (B, 256, T')
+        h = self.temporal_pool(h)  # (B, 256, 512)
+        h = h.transpose(1, 2)  # (B, 512, 256)
+
         # Conformer encoding
         for layer in self.conformer_layers:
-            h = layer(h)  # (B, T', 256)
+            h = layer(h)  # (B, 512, 256)
 
         # Attentive temporal pooling
-        attn_weights = self.attention_pooling(h)  # (B, T', 1)
-        attn_weights = F.softmax(attn_weights, dim=1)  # (B, T', 1)
+        attn_weights = self.attention_pooling(h)  # (B, 512, 1)
+        attn_weights = F.softmax(attn_weights, dim=1)  # (B, 512, 1)
         pooled = torch.sum(h * attn_weights, dim=1)  # (B, 256)
 
         # Final projection

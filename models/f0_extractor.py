@@ -23,7 +23,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import scipy.signal as signal
 import librosa
-from huggingface_hub import hf_hub_download
 
 
 # ---------------------------------------------------------------------------
@@ -157,36 +156,28 @@ class RMVPEExtractor:
         self._load_weights(model_path)
 
     def _load_weights(self, model_path: str = None):
-        """Load pretrained RMVPE weights from file or auto-download."""
-        if model_path is None:
-            # Auto-download from HuggingFace (RVC project's RMVPE weights)
-            cache_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "weights")
-            os.makedirs(cache_dir, exist_ok=True)
-            model_path = hf_hub_download(
-                repo_id="lj1995/VoiceConversionWebUI",
-                filename="rmvpe.pt",
-                cache_dir=cache_dir,
-                local_dir=cache_dir,
-            )
-            print(f"[RMVPE] Downloaded/loaded model from: {model_path}")
+        """Load pretrained RMVPE weights from file.
 
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(
-                f"RMVPE model not found at {model_path}. "
-                "Set model_path or ensure internet access for auto-download."
-            )
-
-        # Load weights - RMVPE weights may have different key names
-        state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
-
-        # Try direct loading first
-        try:
-            self.model.load_state_dict(state_dict)
-        except RuntimeError:
-            # If keys don't match, try to map them
-            mapped_state = self._map_state_dict(state_dict)
-            self.model.load_state_dict(mapped_state, strict=False)
-            print("[RMVPE] Loaded weights with partial key mapping (some keys may differ).")
+        NOTE: We do NOT auto-download from HuggingFace because the published
+        RMVPE model (lj1995/VoiceConversionWebUI/rmvpe.pt) uses a different
+        backbone architecture than our simplified RMVPEBackbone. The download
+        would waste ~500MB of bandwidth and RAM without producing matching weights.
+        """
+        if model_path is not None and os.path.exists(model_path):
+            state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
+            try:
+                self.model.load_state_dict(state_dict)
+                print(f"[RMVPE] Loaded weights from {model_path}")
+            except RuntimeError:
+                mapped_state = self._map_state_dict(state_dict)
+                self.model.load_state_dict(mapped_state, strict=False)
+                print("[RMVPE] Loaded weights with partial key mapping.")
+        else:
+            print("[RMVPE] No pretrained weights provided.")
+            print("[RMVPE] Using randomly initialized model.")
+            print("[RMVPE] Pitch extraction will produce approximate results.")
+            print("[RMVPE] To use pretrained RMVPE, provide model_path")
+            print("[RMVPE] with weights matching this architecture.")
 
         self.model.to(self.device)
         print(f"[RMVPE] Model loaded on {self.device}")

@@ -31,7 +31,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from huggingface_hub import hf_hub_download
 
 
 class CNNFeatureExtractor(nn.Module):
@@ -201,7 +200,7 @@ class ContentEncoder:
         Args:
             output_dim: Dimension of output content features (default 256).
             model_path: Path to ContentVec weights (.pt file).
-                        If None, will attempt to load from HuggingFace.
+                        Must match this architecture's dimensions.
             device: Device to run on. Auto-detected if None.
         """
         self.output_dim = output_dim
@@ -215,46 +214,28 @@ class ContentEncoder:
         self._load_weights(model_path)
 
     def _load_weights(self, model_path: str = None):
-        """Load pretrained ContentVec weights."""
-        if model_path is None:
-            cache_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "weights")
-            os.makedirs(cache_dir, exist_ok=True)
+        """Load pretrained ContentVec weights.
+
+        NOTE: We do NOT auto-download from HuggingFace because the published
+        ContentVec model (lengyue233/content-vec-best) uses HuBERT-large
+        architecture (1024-dim, 24-layer transformer) which does NOT match
+        our lightweight architecture (512-dim, 4-layer transformer). The
+        download would waste ~1.2GB of bandwidth and RAM without producing
+        matching weights.
+        """
+        if model_path is not None and os.path.exists(model_path):
+            state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
             try:
-                # Try downloading from HuggingFace
-                model_path = hf_hub_download(
-                    repo_id="lengyue233/content-vec-best",
-                    filename="pytorch_model.bin",
-                    cache_dir=cache_dir,
-                    local_dir=cache_dir,
-                )
-                print(f"[ContentVec] Downloaded model from HuggingFace: {model_path}")
-            except Exception as e:
-                print(f"[ContentVec] HuggingFace download failed: {e}")
-                print("[ContentVec] Will use randomly initialized model (for testing).")
-                self.model.to(self.device)
-                return
-
-        if not os.path.exists(model_path):
-            print(f"[ContentVec] Weight file not found: {model_path}")
-            print("[ContentVec] Using randomly initialized model (for testing).")
-            self.model.to(self.device)
-            return
-
-        # Load state dict
-        state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
-
-        # Try loading with key mapping
-        try:
-            self.model.load_state_dict(state_dict)
-        except RuntimeError:
-            # Try mapping from fairseq-style keys
-            mapped = self._map_fairseq_keys(state_dict)
-            if mapped:
-                self.model.load_state_dict(mapped, strict=False)
-                print("[ContentVec] Loaded weights with key mapping.")
-            else:
-                print("[ContentVec] Could not map checkpoint keys. "
-                      "Using partially loaded weights.")
+                self.model.load_state_dict(state_dict)
+                print(f"[ContentVec] Loaded weights from {model_path}")
+            except RuntimeError:
+                self.model.load_state_dict(state_dict, strict=False)
+                print("[ContentVec] Partially loaded weights (some keys mismatched).")
+        else:
+            print("[ContentVec] No pretrained weights provided.")
+            print("[ContentVec] Using randomly initialized model.")
+            print("[ContentVec] To use pretrained ContentVec, provide model_path")
+            print("[ContentVec] with weights matching this architecture.")
 
         self.model.to(self.device)
         print(f"[ContentVec] Model loaded on {self.device}")

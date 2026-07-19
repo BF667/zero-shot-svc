@@ -23,6 +23,7 @@ Key Design Principles:
 - RVC-architecture compatible: Follows the same pipeline as RVC v2
 """
 import os
+import gc
 import time
 import numpy as np
 import torch
@@ -105,13 +106,16 @@ class ZeroShotSVC:
 
         t0 = time.time()
 
-        # 1. RMVPE F0 Extractor
-        print("\n[1/5] Loading RMVPE F0 Extractor...")
+        # 1. RMVPE F0 Extractor (CPU — small model, avoids GPU memory)
+        print("\n[1/5] Loading RMVPE F0 Extractor (CPU)...")
         self.f0_extractor = RMVPEExtractor(
             f0_min=self.config.f0_extractor.f0_min,
             f0_max=self.config.f0_extractor.f0_max,
-            device=self.device,
+            device='cpu',
         )
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
         # 2. ContentVec Content Encoder (forced CPU — largest model, avoids CUDA OOM)
         print("\n[2/5] Loading ContentVec Content Encoder (CPU)...")
@@ -119,18 +123,22 @@ class ZeroShotSVC:
             output_dim=self.config.content_encoder.output_dim,
             device='cpu',
         )
-        torch.cuda.empty_cache()
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
-        # 3. CAM++ Speaker Encoder
-        print("\n[3/5] Loading Speaker Encoder (CAM++)...")
+        # 3. CAM++ Speaker Encoder (forced CPU — Conformer O(T^2) attention)
+        print("\n[3/5] Loading Speaker Encoder CAM++ (CPU)...")
         self.speaker_encoder = SpeakerEncoderExtractor(
             embedding_dim=self.config.speaker_encoder.embedding_dim,
-            device=self.device,
+            device='cpu',
         )
-        torch.cuda.empty_cache()
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
-        # 4. VITS Generator
-        print("\n[4/5] Loading VITS Generator...")
+        # 4. VITS Generator (GPU if available — needs fast inference)
+        print(f"\n[4/5] Loading VITS Generator ({self.device})...")
         self.generator = VITSGenerator(
             content_dim=self.config.content_encoder.output_dim,
             hidden_channels=self.config.generator.hidden_channels,
@@ -143,18 +151,22 @@ class ZeroShotSVC:
         )
         self.generator.eval()
         self.generator.to(self.device)
-        torch.cuda.empty_cache()
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
         print(f"[Generator] Model loaded on {self.device} "
               f"(randomly initialized - load pretrained weights for best quality)")
 
-        # 5. HiFi-GAN Vocoder
-        print("\n[5/5] Loading HiFi-GAN Vocoder...")
+        # 5. HiFi-GAN Vocoder (GPU if available — needs fast inference)
+        print(f"\n[5/5] Loading HiFi-GAN Vocoder ({self.device})...")
         self.vocoder = Vocoder(
             hop_size=self.config.vocoder.hop_size,
             sample_rate=self.config.audio.output_sample_rate,
             device=self.device,
         )
-        torch.cuda.empty_cache()
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
         self._models_loaded = True
         elapsed = time.time() - t0
@@ -451,7 +463,7 @@ class ZeroShotSVC:
         spk_tensor = numpy_to_torch(spk_embedding).unsqueeze(0)  # (1, gin_channels)
 
         # Safety: cap sequence length to prevent OOM in self-attention
-        max_seq = 2000  # ~40s at 50Hz — safe for any GPU
+        max_seq = 1500  # ~30s at 50Hz — safe for any GPU/CPU
         T = content_tensor.shape[1]
         if T > max_seq:
             print(f"    [WARN] Truncating features from {T} to {max_seq} frames "
@@ -471,12 +483,25 @@ class ZeroShotSVC:
             )
             # mel: (1, 128, T_mel)
 
+            # Free generator inputs
+            del content_tensor, f0_tensor, spk_tensor
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
             # Generate waveform using HiFi-GAN vocoder
             waveform = self.vocoder.generate(mel)
             # waveform: (1, 1, T_audio)
 
+            # Free mel
+            del mel
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
         # Convert to numpy
         waveform_np = waveform.squeeze(0).squeeze(0).cpu().numpy()
+        del waveform
 
         # Resample from vocoder output rate to target rate if needed
         if self.config.audio.output_sample_rate != 32000:
